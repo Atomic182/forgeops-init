@@ -1,0 +1,56 @@
+{
+  "name": "07-openid",
+  "baseURI": "http://smoke-tests:80",
+  "condition": "${matches(request.uri.path, '^oauth2')}",
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "name": "OAuth2ClientFilter-1",
+          "type": "OAuth2ClientFilter",
+          "config": {
+            "clientEndpoint": "/oauth2",
+            "failureHandler": {
+              "type": "StaticResponseHandler",
+              "config": {
+                "status": 500,
+                "headers": {
+                  "Content-Type": [
+                    "text/plain"
+                  ]
+                },
+                "entity": "An error occurred during the OAuth2 setup."
+              }
+            },
+            "registrations": [
+              {
+                "name": "oidc-user-info-client",
+                "type": "ClientRegistration",
+                "config": {
+                  "clientId": "forgeops",
+                  "clientSecret": "SECRET",
+                  "issuer": {
+                    "name": "Issuer",
+                    "type": "Issuer",
+                    "config": {
+                      "wellKnownEndpoint": "https://staff.forgerock.com/openam/oauth2/.well-known/openid-configuration"
+                    }
+                  },
+                  "scopes": [
+                    "openid",
+                    "email"
+                  ],
+                  "tokenEndpointAuthMethod": "client_secret_basic"
+                }
+              }
+            ],
+            "requireHttps": false,
+            "cacheExpiration": "disabled"
+          }
+        }
+      ],
+      "handler": "ReverseProxyHandler"
+    }
+  }
+}
